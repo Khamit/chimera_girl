@@ -1,0 +1,39 @@
+# ====== СБОРКА ======
+build/
+cmake-build-*/
+*.o
+*.obj
+*.exe
+game
+
+# ====== IDE ======
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ====== macOS ======
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# ====== CMake ======
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.cmake
+
+# ====== АССЕТЫ (если не нужны дубликаты в build/assets) ======
+# build/assets/ уже игнорируется через build/
+
+# ====== ЛОГИ ======
+*.log
+
+# ====== ВРЕМЕННЫЕ ФАЙЛЫ ======
+tmp/
+temp/
