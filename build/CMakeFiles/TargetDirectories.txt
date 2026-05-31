@@ -1,0 +1,3 @@
+/Users/lorde/development/VSCode/Game_itch/ChimeraGirl/build/CMakeFiles/game.dir
+/Users/lorde/development/VSCode/Game_itch/ChimeraGirl/build/CMakeFiles/edit_cache.dir
+/Users/lorde/development/VSCode/Game_itch/ChimeraGirl/build/CMakeFiles/rebuild_cache.dir
