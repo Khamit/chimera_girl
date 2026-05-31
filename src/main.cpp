@@ -5,6 +5,7 @@
 #include <vector>
 #include <cmath>
 #include <algorithm>
+#include "CastleLevel.h"
 
 const int SCREEN_W = 1280;
 const int SCREEN_H = 720;
@@ -27,9 +28,15 @@ int main() {
     Player player;
     player.pos = {200, 600};
     
-    Level level;
-    level.LoadTextures();
-    level.GenerateLevel();
+    // Один указатель:
+    Level* currentLevel = nullptr;
+    Level forestLevel;
+    CastleLevel castleLevel;
+
+    // Загрузка первого уровня
+    currentLevel = &forestLevel;
+    currentLevel->LoadTextures();
+    currentLevel->GenerateLevel();
     
     std::vector<Enemy> enemies;
     std::vector<Projectile> projectiles;
@@ -116,7 +123,7 @@ int main() {
             
             // Коллизия игрока
             Rectangle playerRect = player.GetRect();
-            level.CheckCollision(playerRect, player.pos, player.velocity, player.onGround, player.wasOnGround);
+            currentLevel->CheckCollision(playerRect, player.pos, player.velocity, player.onGround, player.wasOnGround);
             if (player.onGround) player.hasDoubleJumped = false;
             
             // Границы
@@ -220,7 +227,7 @@ int main() {
             }
             
             // Сбор пикапов
-            for (auto& ep : level.energyPickups) {
+            for (auto& ep : currentLevel->energyPickups) {
                 if (ep.collected) continue;
                 if (CheckCollisionCircles(player.pos, 30, ep.pos, ep.radius)) {
                     
@@ -242,7 +249,7 @@ int main() {
             }
 
             // Проверка контрольной точки (руины)
-            for (auto& d : level.decorations) {
+            for (auto& d : currentLevel->decorations) {
                 if (d.texture.id > 0 && d.isCheckpoint) {
                     Rectangle checkpointRect = {
                         d.pos.x,
@@ -259,10 +266,10 @@ int main() {
             }
             
             // Очистка собранного
-            level.energyPickups.erase(
-                std::remove_if(level.energyPickups.begin(), level.energyPickups.end(),
+            currentLevel->energyPickups.erase(
+                std::remove_if(currentLevel->energyPickups.begin(), currentLevel->energyPickups.end(),
                     [](const EnergyPickup& ep) { return ep.collected; }),
-                level.energyPickups.end()
+                currentLevel->energyPickups.end()
             );
             
             // Враги
@@ -273,7 +280,7 @@ int main() {
                 // Коллизия врагов 
                 // (им не нужен wasOnGround, передаём их же onGround)
                 Rectangle enemyRect = e.GetRect();
-                level.CheckCollision(enemyRect, e.pos, e.velocity, e.onGround, e.onGround);
+                currentLevel->CheckCollision(enemyRect, e.pos, e.velocity, e.onGround, e.onGround);
                 
                 // Melee атака (Gotoku, Yurei)
                 if (e.type == EnemyType::GOTOKU || e.type == EnemyType::YUREI) {
@@ -408,7 +415,7 @@ int main() {
                 projectiles.end()
             );
             
-            // Волны — враги выходят по одному
+            // Волны — враги выходят группами по 2-3
             waveTimer -= dt;
             if (waveTimer <= 0) {
                 // Если все враги из текущей волны убиты — начинаем новую волну
@@ -430,68 +437,68 @@ int main() {
                         e.speed = 80 + waveNumber * 10;
                         e.LoadSprites();
                         enemies.push_back(e);
-                        waveTimer = 2.0f; // Босс выходит сразу
+                        waveTimer = 2.0f;
                     } else {
-                        // Обычная волна: спавним врагов по одному с интервалом
-                        Enemy e;
+                        // Обычная волна: спавним 2-3 врагов сразу
+                        int spawnCount = 2 + GetRandomValue(0, 1);  // 2 или 3 врага
                         
-                        // Выбираем сторону спавна (подальше от игрока)
-                        float spawnX = player.pos.x + (GetRandomValue(0, 1) ? 500.0f : -500.0f);
-                        if (spawnX < 50) spawnX = 50;
-                        if (spawnX > LEVEL_WIDTH - 50) spawnX = LEVEL_WIDTH - 50;
-                        
-                        e.pos = {spawnX, 600.0f};
-                        
-                        // Распределение типов
-                        int r = GetRandomValue(0, 100);
-                        if (waveNumber < 3) {
-                            // Первые 3 волны — только Gotoku (melee)
-                            e.type = EnemyType::GOTOKU;
-                        } else if (waveNumber < 6) {
-                            // Волны 4-6 — Gotoku и иногда Onre
-                            e.type = (r < 70) ? EnemyType::GOTOKU : EnemyType::ONRE;
-                        } else {
-                            // После 6 волны — все типы
-                            if (r < 50) e.type = EnemyType::GOTOKU;
-                            else if (r < 85) e.type = EnemyType::ONRE;
-                            else e.type = EnemyType::YUREI;
-                        }
-                        
-                        // Статы зависят от номера волны
-                        e.hp = 2 + waveNumber;
-                        e.maxHp = e.hp;
-                        e.speed = 100 + waveNumber * 10;
-                        e.damage = 8 + waveNumber * 2;
-
-                        e.width = 80.0f; 
-                        e.height = 96.0f;
-                        e.attackRange = 70.0f;
-                        
-                        // Для разных типов — разные характеристики
-                        if (e.type == EnemyType::ONRE) {
-                            e.hp = 1 + waveNumber;
+                        for (int j = 0; j < spawnCount; j++) {
+                            Enemy e;
+                            
+                            // Разные стороны спавна для разнообразия
+                            float spawnX = player.pos.x + (GetRandomValue(0, 1) ? 400.0f + j * 100 : -400.0f - j * 100);
+                            if (spawnX < 50) spawnX = 50;
+                            if (spawnX > LEVEL_WIDTH - 50) spawnX = LEVEL_WIDTH - 50;
+                            
+                            e.pos = {spawnX, 600.0f};
+                            
+                            // Распределение типов
+                            int r = GetRandomValue(0, 100);
+                            if (waveNumber < 3) {
+                                e.type = EnemyType::GOTOKU;
+                            } else if (waveNumber < 6) {
+                                e.type = (r < 70) ? EnemyType::GOTOKU : EnemyType::ONRE;
+                            } else {
+                                if (r < 50) e.type = EnemyType::GOTOKU;
+                                else if (r < 85) e.type = EnemyType::ONRE;
+                                else e.type = EnemyType::YUREI;
+                            }
+                            
+                            // Статы
+                            e.hp = 2 + waveNumber;
                             e.maxHp = e.hp;
-                            e.damage = 10 + waveNumber * 2;
-                            e.width = 70.0f; 
-                            e.height = 84.0f;
-                            e.attackRange = 65.0f; 
-                            e.orbCount = 6;        
-                            e.invulnerable = true; 
-                            e.orbRadius = 60.0f;   
+                            e.speed = 100 + waveNumber * 10;
+                            e.damage = 8 + waveNumber * 2;
+                            e.width = 80.0f;
+                            e.height = 96.0f;
+                            e.attackRange = 70.0f;
+                            
+                            // Типовые особенности
+                            if (e.type == EnemyType::ONRE) {
+                                e.hp = 1 + waveNumber;
+                                e.maxHp = e.hp;
+                                e.damage = 10 + waveNumber * 2;
+                                e.width = 70.0f;
+                                e.height = 84.0f;
+                                e.attackRange = 65.0f;
+                                e.orbCount = 6;
+                                e.invulnerable = true;
+                                e.orbRadius = 60.0f;
+                            }
+                            if (e.type == EnemyType::YUREI) {
+                                e.hp = 5 + waveNumber * 2;
+                                e.maxHp = e.hp;
+                                e.width = 110.0f;
+                                e.height = 132.0f;
+                                e.damage = 15 + waveNumber * 2;
+                                e.speed = 90 + waveNumber * 8;
+                                e.attackRange = 85.0f;
+                            }
+                            
+                            e.LoadSprites();
+                            enemies.push_back(e);
                         }
-                        if (e.type == EnemyType::YUREI) {
-                            e.hp = 5 + waveNumber * 2;
-                            e.maxHp = e.hp;
-                            e.width = 110.0f;   
-                            e.height = 132.0f;  
-                            e.damage = 15 + waveNumber * 2;
-                            e.speed = 90 + waveNumber * 8;
-                            e.attackRange = 85.0f; 
-                        }
-                        
-                        e.LoadSprites();
-                        enemies.push_back(e);
-                        waveTimer = 2.5f; // Следующий враг через 2.5 секунды
+                        waveTimer = 3.0f;  // Пауза между волнами
                     }
                 }
             }
@@ -510,10 +517,10 @@ int main() {
         ClearBackground({15, 15, 30, 255});
         
         BeginMode2D(camera);
-        level.DrawBackground(camera.target.x);  // Фон с параллаксом
-        level.Draw();
-        level.DrawDecorations();
-        level.DrawEnergyPickups();
+        currentLevel->DrawBackground(camera.target.x);  // Фон с параллаксом
+        currentLevel->Draw();
+        currentLevel->DrawDecorations();
+        currentLevel->DrawEnergyPickups();
         
         for (auto& e : enemies) e.Draw();
         
@@ -581,13 +588,12 @@ int main() {
         DrawText("1:Human 2:Rabbit(20) 3:Wolf(50) 4:Snake(100)", 10, SCREEN_H - 60, 14, GRAY);
         DrawText("WASD:Move  Space:Jump  J:Attack", 10, SCREEN_H - 40, 14, GRAY);
         
-        // Game Over
+        // Game Over / Checkpoint Menu
         if (gameOver) {
             DrawRectangle(0, 0, SCREEN_W, SCREEN_H, {0, 0, 0, 200});
             
-            // Проверяем, победили ли мы
             bool reachedCheckpoint = false;
-            for (auto& d : level.decorations) {
+            for (auto& d : currentLevel->decorations) {
                 if (d.isCheckpoint) {
                     Rectangle cr = {d.pos.x, d.pos.y, d.texture.width * d.scale, d.texture.height * d.scale};
                     if (CheckCollisionRecs(player.GetRect(), cr)) {
@@ -597,35 +603,98 @@ int main() {
             }
             
             if (reachedCheckpoint) {
-                DrawText("CHECKPOINT REACHED!", SCREEN_W/2 - 200, SCREEN_H/2 - 30, 36, GREEN);
-                DrawText("You found the ancient ruins", SCREEN_W/2 - 180, SCREEN_H/2 + 20, 20, WHITE);
+                // Меню после прохождения уровня
+                DrawText("LEVEL COMPLETE!", SCREEN_W/2 - 180, SCREEN_H/2 - 80, 36, GREEN);
+                DrawText("You found the ancient ruins", SCREEN_W/2 - 180, SCREEN_H/2 - 30, 20, WHITE);
+                
+                // Кнопки выбора
+                DrawText("N - Next Level (Castle)", SCREEN_W/2 - 150, SCREEN_H/2 + 40, 22, YELLOW);
+                DrawText("R - Restart This Level", SCREEN_W/2 - 150, SCREEN_H/2 + 70, 22, {200, 200, 200, 255});
+                DrawText("M - Main Menu", SCREEN_W/2 - 150, SCREEN_H/2 + 100, 22, {200, 200, 200, 255});
+                
+                if (IsKeyPressed(KEY_N)) {
+                    player.UnloadSprites();
+                    player = Player();
+                    player.pos = {200, 600};
+                    player.LoadSprites((GirlType)selectedGirl);
+                    enemies.clear();
+                    projectiles.clear();
+                    
+                    // Выгружаем старый уровень
+                    currentLevel->UnloadTextures();
+                    
+                    // Переключаем указатель на замок
+                    currentLevel = &castleLevel;
+                    
+                    // Загружаем замок
+                    currentLevel->LoadTextures();
+                    currentLevel->GenerateLevel();
+                    
+                    waveNumber = 0;
+                    waveTimer = 3.0f;
+                    gameOver = false;
+                }
+                
+                if (IsKeyPressed(KEY_R)) {
+                    // Рестарт этого же уровня
+                    player.UnloadSprites();
+                    player = Player();
+                    player.pos = {200, 600};
+                    player.LoadSprites((GirlType)selectedGirl);
+                    enemies.clear();
+                    projectiles.clear();
+                    currentLevel->UnloadTextures();
+                    currentLevel->LoadTextures();
+                    currentLevel->GenerateLevel();
+                    waveNumber = 0;
+                    waveTimer = 3.0f;
+                    gameOver = false;
+                }
+                
+                if (IsKeyPressed(KEY_M)) {
+                    player.UnloadSprites();
+                    player = Player();
+                    enemies.clear();
+                    projectiles.clear();
+                    
+                    currentLevel->UnloadTextures();
+                    currentLevel = &forestLevel;
+                    currentLevel->LoadTextures();
+                    currentLevel->GenerateLevel();
+                    
+                    waveNumber = 0;
+                    waveTimer = 3.0f;
+                    gameOver = false;
+                    showGirlSelect = true;
+                }
+                
             } else {
+                // Обычное Game Over (смерть)
                 DrawText("GAME OVER", SCREEN_W/2 - 130, SCREEN_H/2 - 30, 40, RED);
-            }
-            
-            DrawText("Press R to restart", SCREEN_W/2 - 100, SCREEN_H/2 + 60, 20, WHITE);
-
-            if (IsKeyPressed(KEY_R)) {
-                player.UnloadSprites();
-                player = Player();
-                player.pos = {200, 600};
-                player.LoadSprites((GirlType)selectedGirl);
-                enemies.clear();
-                projectiles.clear();
-                level.UnloadTextures();
-                level.LoadTextures();
-                level.GenerateLevel();
-                waveNumber = 0;
-                waveTimer = 3.0f;
-                gameOver = false;
+                DrawText("Press R to restart", SCREEN_W/2 - 100, SCREEN_H/2 + 20, 20, WHITE);
+                
+                if (IsKeyPressed(KEY_R)) {
+                    player.UnloadSprites();
+                    player = Player();
+                    player.pos = {200, 600};
+                    player.LoadSprites((GirlType)selectedGirl);
+                    enemies.clear();
+                    projectiles.clear();
+                    currentLevel->UnloadTextures();
+                    currentLevel->LoadTextures();
+                    currentLevel->GenerateLevel();
+                    waveNumber = 0;
+                    waveTimer = 3.0f;
+                    gameOver = false;
+                }
             }
         }
-        
+                
         EndDrawing();
     }
     
     // Очистка
-    level.UnloadTextures();
+    currentLevel->UnloadTextures();
     for (auto& e : enemies) e.UnloadSprites();
     // Очистка звуков
     UnloadSound(coinSound);

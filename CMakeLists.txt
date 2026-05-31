@@ -13,6 +13,7 @@ add_executable(game
     src/Player.cpp
     src/Enemy.cpp
     src/Level.cpp
+    src/CastleLevel.cpp
 )
 
 target_link_libraries(game raylib)

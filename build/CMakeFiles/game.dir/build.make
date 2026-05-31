@@ -128,12 +128,27 @@ CMakeFiles/game.dir/src/Level.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/game.dir/src/Level.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/lorde/development/VSCode/Game_itch/ChimeraGirl/src/Level.cpp -o CMakeFiles/game.dir/src/Level.cpp.s
 
+CMakeFiles/game.dir/src/CastleLevel.cpp.o: CMakeFiles/game.dir/flags.make
+CMakeFiles/game.dir/src/CastleLevel.cpp.o: /Users/lorde/development/VSCode/Game_itch/ChimeraGirl/src/CastleLevel.cpp
+CMakeFiles/game.dir/src/CastleLevel.cpp.o: CMakeFiles/game.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/lorde/development/VSCode/Game_itch/ChimeraGirl/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/game.dir/src/CastleLevel.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/game.dir/src/CastleLevel.cpp.o -MF CMakeFiles/game.dir/src/CastleLevel.cpp.o.d -o CMakeFiles/game.dir/src/CastleLevel.cpp.o -c /Users/lorde/development/VSCode/Game_itch/ChimeraGirl/src/CastleLevel.cpp
+
+CMakeFiles/game.dir/src/CastleLevel.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/game.dir/src/CastleLevel.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/lorde/development/VSCode/Game_itch/ChimeraGirl/src/CastleLevel.cpp > CMakeFiles/game.dir/src/CastleLevel.cpp.i
+
+CMakeFiles/game.dir/src/CastleLevel.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/game.dir/src/CastleLevel.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/lorde/development/VSCode/Game_itch/ChimeraGirl/src/CastleLevel.cpp -o CMakeFiles/game.dir/src/CastleLevel.cpp.s
+
 # Object files for target game
 game_OBJECTS = \
 "CMakeFiles/game.dir/src/main.cpp.o" \
 "CMakeFiles/game.dir/src/Player.cpp.o" \
 "CMakeFiles/game.dir/src/Enemy.cpp.o" \
-"CMakeFiles/game.dir/src/Level.cpp.o"
+"CMakeFiles/game.dir/src/Level.cpp.o" \
+"CMakeFiles/game.dir/src/CastleLevel.cpp.o"
 
 # External object files for target game
 game_EXTERNAL_OBJECTS =
@@ -142,10 +157,11 @@ game: CMakeFiles/game.dir/src/main.cpp.o
 game: CMakeFiles/game.dir/src/Player.cpp.o
 game: CMakeFiles/game.dir/src/Enemy.cpp.o
 game: CMakeFiles/game.dir/src/Level.cpp.o
+game: CMakeFiles/game.dir/src/CastleLevel.cpp.o
 game: CMakeFiles/game.dir/build.make
 game: /opt/homebrew/Cellar/raylib/5.5/lib/libraylib.dylib
 game: CMakeFiles/game.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/lorde/development/VSCode/Game_itch/ChimeraGirl/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Linking CXX executable game"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/lorde/development/VSCode/Game_itch/ChimeraGirl/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Linking CXX executable game"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/game.dir/link.txt --verbose=$(VERBOSE)
 	/opt/homebrew/bin/cmake -E copy_directory /Users/lorde/development/VSCode/Game_itch/ChimeraGirl/assets /Users/lorde/development/VSCode/Game_itch/ChimeraGirl/build/assets
 

@@ -129,6 +129,30 @@ game/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/build
 .PHONY : game/fast
 
+src/CastleLevel.o: src/CastleLevel.cpp.o
+.PHONY : src/CastleLevel.o
+
+# target to build an object file
+src/CastleLevel.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/src/CastleLevel.cpp.o
+.PHONY : src/CastleLevel.cpp.o
+
+src/CastleLevel.i: src/CastleLevel.cpp.i
+.PHONY : src/CastleLevel.i
+
+# target to preprocess a source file
+src/CastleLevel.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/src/CastleLevel.cpp.i
+.PHONY : src/CastleLevel.cpp.i
+
+src/CastleLevel.s: src/CastleLevel.cpp.s
+.PHONY : src/CastleLevel.s
+
+# target to generate assembly for a file
+src/CastleLevel.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/src/CastleLevel.cpp.s
+.PHONY : src/CastleLevel.cpp.s
+
 src/Enemy.o: src/Enemy.cpp.o
 .PHONY : src/Enemy.o
 
@@ -234,6 +258,9 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... game"
+	@echo "... src/CastleLevel.o"
+	@echo "... src/CastleLevel.i"
+	@echo "... src/CastleLevel.s"
 	@echo "... src/Enemy.o"
 	@echo "... src/Enemy.i"
 	@echo "... src/Enemy.s"

@@ -17,7 +17,7 @@ void Enemy::LoadSprites() {
     // Загружаем основные спрайты если они существуют
     if (FileExists((path + "Idle.png").c_str()))    texIdle = LoadTexture((path + "Idle.png").c_str());
     if (FileExists((path + "Walk.png").c_str()))    texWalk = LoadTexture((path + "Walk.png").c_str());
-    if (FileExists((path + "Attack_1.png").c_str())) texAttack = LoadTexture((path + "Attack_1.png").c_str());
+    if (FileExists((path + "Attack_2.png").c_str())) texAttack = LoadTexture((path + "Attack_2.png").c_str());
     if (FileExists((path + "Hurt.png").c_str()))    texHurt = LoadTexture((path + "Hurt.png").c_str());
     if (FileExists((path + "Dead.png").c_str()))    texDead = LoadTexture((path + "Dead.png").c_str());
 }

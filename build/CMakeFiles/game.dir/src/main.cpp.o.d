@@ -754,4 +754,5 @@ CMakeFiles/game.dir/src/main.cpp.o: \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/_types/_nl_item.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/cstdarg \
   /Users/lorde/development/VSCode/Game_itch/ChimeraGirl/src/Enemy.h \
-  /Users/lorde/development/VSCode/Game_itch/ChimeraGirl/src/Level.h
+  /Users/lorde/development/VSCode/Game_itch/ChimeraGirl/src/Level.h \
+  /Users/lorde/development/VSCode/Game_itch/ChimeraGirl/src/CastleLevel.h
