@@ -38,8 +38,8 @@ void Enemy::Update(float dt, Vector2 playerPos) {
         velocity.y += 1200.0f * dt;
     } else {
         // Onre летает — медленно следует за игроком по Y
-        float targetY = playerPos.y - 100;
-        velocity.y = (targetY - pos.y) * 2.0f;
+        float targetY = playerPos.y - 50;
+        velocity.y = (targetY - pos.y) * 1.0f;
     }
     
     float dir = (playerPos.x > pos.x) ? 1.0f : -1.0f;
@@ -158,12 +158,12 @@ void Enemy::Draw() const {
         for (int i = 0; i < orbCount; i++) {
             float angle = orbAngle + (i * 2 * PI / orbCount);
             float ox = pos.x + cosf(angle) * orbRadius;
-            float oy = pos.y + sinf(angle) * orbRadius;
+            float oy = (pos.y - height/2) + sinf(angle) * orbRadius;
             
-            // Свечение орба
-            DrawCircle(ox, oy, 8, {100, 100, 255, 100});
-            DrawCircle(ox, oy, 6, {150, 150, 255, 200});
-            DrawCircle(ox, oy, 3, {200, 200, 255, 255});
+            // Красное свечение (такое же как у вражеских снарядов)
+            DrawCircle(ox, oy, 8, {255, 50, 50, 100});    // Внешний — тёмно-красный полупрозрачный
+            DrawCircle(ox, oy, 6, {255, 80, 80, 200});    // Средний — красный
+            DrawCircle(ox, oy, 3, {255, 100, 100, 255});  // Ядро — ярко-красный (как снаряд)
         }
         
         // Индикатор неуязвимости

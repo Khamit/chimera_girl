@@ -152,7 +152,7 @@ int main() {
                         if (e.orbCount <= 0) {
                             e.invulnerable = false;
                             e.recharging = true;
-                            e.rechargeTimer = 2.5f;
+                            e.rechargeTimer = 4.5f;
                         }
                         break;  // Одна атака = один орб
                     }

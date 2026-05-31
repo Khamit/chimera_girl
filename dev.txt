@@ -11,5 +11,5 @@ make -j8
 ===== GITHUB =====
 
 git add .
-git commit -m "add readme"
+git commit -m "change orb color + fix orb centre"
 git push
