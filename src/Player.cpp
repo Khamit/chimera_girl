@@ -200,6 +200,24 @@ void Player::Draw() const {
     if (isAttacking && animAttack.loaded) currentAnim = &animAttack;
     else if (fabsf(velocity.x) > 10 && onGround && animWalk.loaded) currentAnim = &animWalk;
     
+    // === СИНЕЕ СВЕЧЕНИЕ ДЛЯ КРОЛИКА ===
+    if (currentForm == PlayerForm::RABBIT) {
+        Color glowColor = {50, 100, 255, 60};  // Синий полупрозрачный
+        float glowRadius = width * 0.9f;
+        float glowY = pos.y - height/2;
+        
+        // Внешнее свечение
+        DrawCircleGradient(pos.x, glowY, glowRadius + 8, 
+                          {50, 100, 255, 40}, {50, 100, 255, 0});
+        // Внутреннее свечение
+        DrawCircleGradient(pos.x, glowY, glowRadius + 4,
+                          {100, 150, 255, 30}, {50, 100, 255, 0});
+        // Лёгкое мерцание
+        float pulse = 1.0f + sinf(GetTime() * 8.0f) * 0.15f;
+        DrawEllipse(pos.x, glowY, glowRadius * pulse, glowRadius * 0.6f * pulse, 
+                    {80, 140, 255, 20});
+    }
+    
     if (currentAnim->loaded && currentAnim->frameCount > 0) {
         // Вырезаем кадр из spritesheet
         Rectangle src = {
