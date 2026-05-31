@@ -167,8 +167,15 @@ void Level::GenerateLevel() {
     // ====== 5. ЧЕКПОИНТ ======
     Decoration checkpoint;
     checkpoint.isCheckpoint = true;
-    checkpoint.scale = 2.0f;
-    checkpoint.pos = {(float)((levelLength - 2) * tileSize), (float)(groundY - 256 * checkpoint.scale)};
+    checkpoint.scale = 0.6f;
+
+    // Позиция: на земле, в конце уровня
+    float ruinsHeight = 480 * checkpoint.scale;  // Decor_Ruins_01.png = 480x480
+    checkpoint.pos = {
+        (float)((levelLength - 3) * tileSize),  // 3 тайла от конца
+        (float)(groundY - ruinsHeight)           // Низ руин на уровне земли
+    };
+
     if (FileExists("assets/platform_ground/Environment/Decor_Ruins_01.png")) {
         checkpoint.texture = LoadTexture("assets/platform_ground/Environment/Decor_Ruins_01.png");
     }
