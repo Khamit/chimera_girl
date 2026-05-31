@@ -7,3 +7,9 @@ make -j8
 ./game
 
 # Проверка
+
+===== GITHUB =====
+
+git add .gitignore
+git commit -m "add readme"
+git push
