@@ -58,6 +58,22 @@ void Enemy::Update(float dt, Vector2 playerPos) {
             if (dist > 300.0f) velocity.x = dir * speed;
             else if (dist < 150.0f) velocity.x = -dir * speed * 0.5f;
             else velocity.x = 0;
+            
+            // === ОРБИТАЛЬНЫЕ СНАРЯДЫ ===
+            if (recharging) {
+                // Перезарядка
+                rechargeTimer -= dt;
+                if (rechargeTimer <= 0) {
+                    orbCount = 6;
+                    recharging = false;
+                    invulnerable = true;  // Снова неуязвим
+                }
+            }
+            
+            // Вращение орбов
+            orbAngle += orbSpeed * dt;
+            if (orbAngle > 2 * PI) orbAngle -= 2 * PI;
+            
             break;
         }
         case EnemyType::YUREI: {
@@ -135,6 +151,31 @@ void Enemy::Draw() const {
         }
         DrawRectangle(pos.x - width/2, pos.y - height, width, height, color);
         DrawRectangle(pos.x - width/3, pos.y - 5, width/1.5f, 8, {color.r, color.g, color.b, 100});
+    }
+
+    // === РИСУЕМ ОРБИТАЛЬНЫЕ СНАРЯДЫ ДЛЯ ONRE ===
+    if (type == EnemyType::ONRE && orbCount > 0) {
+        for (int i = 0; i < orbCount; i++) {
+            float angle = orbAngle + (i * 2 * PI / orbCount);
+            float ox = pos.x + cosf(angle) * orbRadius;
+            float oy = pos.y + sinf(angle) * orbRadius;
+            
+            // Свечение орба
+            DrawCircle(ox, oy, 8, {100, 100, 255, 100});
+            DrawCircle(ox, oy, 6, {150, 150, 255, 200});
+            DrawCircle(ox, oy, 3, {200, 200, 255, 255});
+        }
+        
+        // Индикатор неуязвимости
+        if (invulnerable) {
+            DrawText("INVULNERABLE", pos.x - 35, pos.y - height - 25, 10, YELLOW);
+        }
+    }
+    
+    // Индикатор перезарядки
+    if (recharging) {
+        DrawText(TextFormat("RECHARGING... %.1f", rechargeTimer), 
+                 pos.x - 40, pos.y - height - 25, 10, ORANGE);
     }
     
     // HP bar

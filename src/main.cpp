@@ -12,13 +12,18 @@ const int LEVEL_WIDTH = 60 * 64;
 
 int main() {
     InitWindow(SCREEN_W, SCREEN_H, "Chimera Girl - Spirit Hunters");
+    InitAudioDevice();
     SetTargetFPS(60);
     SetExitKey(KEY_ESCAPE);
-    
-    // ЗВУК: InitAudioDevice();
-    // ЗВУК: загрузить Music bgm = LoadMusicStream("assets/sound/bgm.mp3");
-    // ЗВУК: PlayMusicStream(bgm);
-    
+
+    // Загрузка звуков
+    Sound coinSound = LoadSound("assets/sound/coin_sound.mp3");
+    Sound attackSound = LoadSound("assets/sound/attack_s.mp3");
+    Sound punchSound = LoadSound("assets/sound/punch_s.mp3");
+    Music bgm = LoadMusicStream("assets/sound/ghost_music.mp3");
+    SetMusicVolume(bgm, 0.05f);   // — 5% громкости
+    PlayMusicStream(bgm);
+        
     Player player;
     player.pos = {200, 600};
     
@@ -45,7 +50,8 @@ int main() {
     while (!WindowShouldClose()) {
         float dt = GetFrameTime();
         
-        // ЗВУК: UpdateMusicStream(bgm);
+        // ЗВУК: 
+        UpdateMusicStream(bgm);
         
         // ====== ЭКРАН ВЫБОРА ДЕВОЧКИ ======
         if (showGirlSelect) {
@@ -121,9 +127,54 @@ int main() {
                 gameOver = true;
             }
             
-            // Атака
-            if (attackPressed && player.attackCooldown <= 0) {
-                player.Attack();
+        // Атака игрока
+        if (attackPressed && player.attackCooldown <= 0) {
+            player.Attack();
+            PlaySound(attackSound);
+            
+            // Проверяем попадание по орбам Onre
+            for (auto& e : enemies) {
+                if (!e.alive || e.type != EnemyType::ONRE || e.orbCount <= 0) continue;
+                
+                // Проверяем столкновение атаки с орбами
+                float attackX = player.pos.x + player.facingDirection * (player.width/2 + player.attackRange/2);
+                float attackY = player.pos.y - player.height/2;
+                
+                for (int i = e.orbCount - 1; i >= 0; i--) {
+                    float angle = e.orbAngle + (i * 2 * PI / e.orbCount);
+                    float ox = e.pos.x + cosf(angle) * e.orbRadius;
+                    float oy = e.pos.y + sinf(angle) * e.orbRadius;
+                    
+                    if (CheckCollisionCircles({attackX, attackY}, player.attackRange, {ox, oy}, 10)) {
+                        e.orbCount--;
+                        
+                        // Если все орбы сбиты — враг уязвим и начинается перезарядка
+                        if (e.orbCount <= 0) {
+                            e.invulnerable = false;
+                            e.recharging = true;
+                            e.rechargeTimer = 2.5f;
+                        }
+                        break;  // Одна атака = один орб
+                    }
+                }
+            }
+            
+            // Melee атака по врагам (только если они не неуязвимы)
+            for (auto& e : enemies) {
+                if (!e.alive || e.invulnerable) continue;  // ← ПРОПУСКАЕМ НЕУЯЗВИМЫХ
+                
+                float dist = sqrtf(powf(e.pos.x - player.pos.x, 2) + powf(e.pos.y - player.pos.y, 2));
+                if (dist < player.attackRange) {
+                    e.hp -= player.attackDamage;
+                    e.isAttacking = false;
+                    PlaySound(punchSound);
+                    if (e.hp <= 0) {
+                        e.alive = false;
+                        player.AddEnergy(15);
+                    }
+                }
+            }
+        
                 
         if (player.isRangedAttack()) {
             Projectile p;
@@ -158,6 +209,7 @@ int main() {
                         if (dist < player.attackRange && e.alive) {
                             e.hp -= player.attackDamage;
                             e.isAttacking = false;
+                            PlaySound(punchSound);
                             if (e.hp <= 0) {
                                 e.alive = false;
                                 player.AddEnergy(15);
@@ -177,15 +229,15 @@ int main() {
                         case PickupType::DIAMOND:
                         case PickupType::STAR:
                             player.AddEnergy(ep.amount);
+                            PlaySound(coinSound);  // ← ВОТ ЗДЕСЬ
                             break;
                         case PickupType::LIFE:
                             player.hp += ep.healAmount;
                             if (player.hp > player.maxHp) player.hp = player.maxHp;
+                            PlaySound(coinSound);  // ← ИЛИ ЗДЕСЬ (звук лечения)
                             break;
                     }
-                    
                     ep.collected = true;
-                    // ЗВУК: PlaySound(pickupSound);
                 }
             }
 
@@ -271,6 +323,42 @@ int main() {
                 
                 // Гравитация для снарядов игрока (книга падает по дуге)
                 if (p.fromPlayer) {
+                    // Сначала проверяем орбы Onre
+                    for (auto& e : enemies) {
+                        if (!e.alive || e.type != EnemyType::ONRE || e.orbCount <= 0) continue;
+                        
+                        for (int i = e.orbCount - 1; i >= 0; i--) {
+                            float angle = e.orbAngle + (i * 2 * PI / e.orbCount);
+                            float ox = e.pos.x + cosf(angle) * e.orbRadius;
+                            float oy = e.pos.y + sinf(angle) * e.orbRadius;
+                            
+                            if (CheckCollisionCircles(p.pos, p.radius, {ox, oy}, 10)) {
+                                e.orbCount--;
+                                p.active = false;
+                                if (e.orbCount <= 0) {
+                                    e.invulnerable = false;
+                                    e.recharging = true;
+                                    e.rechargeTimer = 2.5f;
+                                }
+                                break;
+                            }
+                        }
+                        if (!p.active) break;
+                    }
+                    
+                    // Потом проверяем врагов (только уязвимых)
+                    if (p.active) {
+                        for (auto& e : enemies) {
+                            if (!e.alive || e.invulnerable) continue;
+                            if (CheckCollisionCircles(p.pos, p.radius, {e.pos.x, e.pos.y - e.height/2}, 25)) {
+                                e.hp -= p.damage;
+                                p.active = false;
+                                PlaySound(punchSound);
+                                if (e.hp <= 0) { e.alive = false; player.AddEnergy(15); }
+                                break;
+                            }
+                        }
+                    }
                     p.dir.y += 2.3f * dt;  // Постепенно опускается вниз
                     
                     // Нормализуем направление чтобы скорость оставалась постоянной
@@ -294,6 +382,7 @@ int main() {
                         if (CheckCollisionCircles(p.pos, p.radius, {e.pos.x, e.pos.y - e.height/2}, 25)) {
                             e.hp -= p.damage;
                             p.active = false;
+                            PlaySound(punchSound);
                             if (e.hp <= 0) {
                                 e.alive = false;
                                 player.AddEnergy(15);
@@ -373,20 +462,31 @@ int main() {
                         e.maxHp = e.hp;
                         e.speed = 100 + waveNumber * 10;
                         e.damage = 8 + waveNumber * 2;
+
+                        e.width = 80.0f; 
+                        e.height = 96.0f;
+                        e.attackRange = 70.0f;
                         
                         // Для разных типов — разные характеристики
                         if (e.type == EnemyType::ONRE) {
                             e.hp = 1 + waveNumber;
                             e.maxHp = e.hp;
                             e.damage = 10 + waveNumber * 2;
+                            e.width = 70.0f; 
+                            e.height = 84.0f;
+                            e.attackRange = 65.0f; 
+                            e.orbCount = 6;        
+                            e.invulnerable = true; 
+                            e.orbRadius = 60.0f;   
                         }
                         if (e.type == EnemyType::YUREI) {
                             e.hp = 5 + waveNumber * 2;
                             e.maxHp = e.hp;
-                            e.width = 55;
-                            e.height = 64;
+                            e.width = 110.0f;   
+                            e.height = 132.0f;  
                             e.damage = 15 + waveNumber * 2;
                             e.speed = 90 + waveNumber * 8;
+                            e.attackRange = 85.0f; 
                         }
                         
                         e.LoadSprites();
@@ -527,8 +627,13 @@ int main() {
     // Очистка
     level.UnloadTextures();
     for (auto& e : enemies) e.UnloadSprites();
-    // ЗВУК: UnloadMusicStream(bgm);
-    // ЗВУК: CloseAudioDevice();
+    // Очистка звуков
+    UnloadSound(coinSound);
+    UnloadSound(attackSound);
+    UnloadSound(punchSound);
+    UnloadMusicStream(bgm);
+    CloseAudioDevice(); 
+    
     CloseWindow();
     return 0;
 }

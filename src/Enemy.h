@@ -12,8 +12,8 @@ struct Enemy {
     Vector2 pos;
     Vector2 velocity = {0, 0};
     float speed = 120.0f;
-    float width = 40.0f;
-    float height = 48.0f;
+    float width = 80.0f;   // Было 40
+    float height = 96.0f;  // Было 48
     
     int hp = 3;
     int maxHp = 3;
@@ -27,6 +27,15 @@ struct Enemy {
     bool alive = true;
     bool isAttacking = false;
     int facingDirection = 1;
+
+    // === НОВЫЕ ПОЛЯ ДЛЯ ONRE (орбитальные снаряды) ===
+    int orbCount = 6;           // Количество орбов вокруг Onre
+    float orbAngle = 0.0f;      // Базовый угол вращения
+    float orbRadius = 60.0f;    // Радиус орбиты
+    float orbSpeed = 3.0f;      // Скорость вращения
+    bool invulnerable = false;  // Неуязвимость пока есть орбы
+    float rechargeTimer = 0.0f; // Таймер перезарядки
+    bool recharging = false;    // Флаг перезарядки
     
     // Анимации
     Texture2D texIdle;
