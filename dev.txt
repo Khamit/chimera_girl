@@ -1,4 +1,4 @@
-# Правила сборки
+# Правила сборки apple/linux
 cd build
 cmake ..
 make -j8
@@ -13,3 +13,22 @@ make -j8
 git add .
 git commit -m "castle new level"
 git push
+
+===== WINDOWS =====
+
+cd /Users/lorde/development/VSCode/Game_itch/ChimeraGirl
+
+x86_64-w64-mingw32-g++ -o ChimeraGirl.exe \
+    src/main.cpp \
+    src/Player.cpp \
+    src/Enemy.cpp \
+    src/Level.cpp \
+    src/CastleLevel.cpp \
+    -I/Users/lorde/raylib-win64/include \
+    -L/Users/lorde/raylib-win64/lib \
+    -lraylib \
+    -lopengl32 \
+    -lgdi32 \
+    -lwinmm \
+    -static \
+    -O3

@@ -1,0 +1,65 @@
+cmake_minimum_required(VERSION 3.16)
+project(ChimeraGirl)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Определяем платформу
+if(MINGW OR WIN32)
+    message(STATUS "Building for Windows")
+    set(PLATFORM_WINDOWS TRUE)
+elseif(APPLE)
+    message(STATUS "Building for macOS")
+    set(CMAKE_OSX_ARCHITECTURES "arm64")
+    set(PLATFORM_MACOS TRUE)
+else()
+    message(STATUS "Building for Linux")
+    set(PLATFORM_LINUX TRUE)
+endif()
+
+add_compile_options(-O3)
+
+# Поиск raylib зависит от платформы
+if(PLATFORM_WINDOWS)
+    # Для Windows нужно указать путь к raylib вручную
+    set(RAYLIB_PATH "/opt/homebrew/opt/raylib" CACHE PATH "Path to raylib")
+    # Или используйте: /usr/local/opt/raylib для Intel Mac
+    
+    find_library(RAYLIB_LIBRARY NAMES raylib PATHS ${RAYLIB_PATH}/lib)
+    find_path(RAYLIB_INCLUDE_DIR NAMES raylib.h PATHS ${RAYLIB_PATH}/include)
+    
+    if(NOT RAYLIB_LIBRARY OR NOT RAYLIB_INCLUDE_DIR)
+        message(FATAL_ERROR "Raylib not found for Windows cross-compilation")
+    endif()
+    
+    add_executable(game WIN32  # WIN32 для GUI приложения (без консоли)
+        src/main.cpp
+        src/Player.cpp
+        src/Enemy.cpp
+        src/Level.cpp
+        src/CastleLevel.cpp
+    )
+    
+    target_include_directories(game PRIVATE src ${RAYLIB_INCLUDE_DIR})
+    target_link_libraries(game ${RAYLIB_LIBRARY} opengl32 gdi32 winmm)
+else()
+    # macOS и Linux используют стандартный поиск
+    find_package(raylib REQUIRED)
+    
+    add_executable(game
+        src/main.cpp
+        src/Player.cpp
+        src/Enemy.cpp
+        src/Level.cpp
+        src/CastleLevel.cpp
+    )
+    
+    target_include_directories(game PRIVATE src)
+    target_link_libraries(game raylib)
+endif()
+
+# Копирование assets для всех платформ
+add_custom_command(TARGET game POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_SOURCE_DIR}/assets $<TARGET_FILE_DIR:game>/assets
+)
